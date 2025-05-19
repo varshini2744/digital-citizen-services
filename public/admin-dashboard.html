@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    #data {
+      margin-top: 30px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    select, form button {
+      padding: 5px;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>Welcome to Admin Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+  </div>
+  <p>Use this page to manage user submissions.</p>
+
+  <ul>
+    <li><button onclick="loadView('id')">View ID Applications</button></li>
+    <li><button onclick="loadView('tax')">View Tax Applications</button></li>
+    <li><button onclick="loadView('rto')">View RTO Registrations</button></li>
+  </ul>
+
+  <div id="data"></div>
+
+  <script>
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      alert("You must be logged in as an admin to view this page.");
+      window.location.href = "/admin-login.html";
+    }
+
+    const endpointMap = {
+      id: "/view-id",
+      tax: "/view-tax",
+      rto: "/view-rto"
+    };
+
+    function loadView(type) {
+      const endpoint = endpointMap[type];
+      if (!endpoint) return;
+
+      fetch(endpoint, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch ${type} data (status ${res.status})`);
+        return res.text();
+      })
+      .then(html => {
+        document.getElementById("data").innerHTML = html;
+        attachStatusForms();
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById("data").innerHTML = `<p style="color:red;">${err.message}</p>`;
+      });
+    }
+
+    function attachStatusForms() {
+      document.querySelectorAll("form.status-form").forEach(form => {
+        form.addEventListener("submit", async e => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const body = new URLSearchParams(formData).toString();
+
+          try {
+            const res = await fetch("/update-status", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": `Bearer ${token}`
+              },
+              body
+            });
+            if (!res.ok) throw new Error("Status update failed");
+            form.querySelector(".status-value").textContent = formData.get("status");
+          } catch (err) {
+            alert("Error updating status: " + err.message);
+          }
+        });
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("authToken");
+      window.location.href = "/admin-login.html";
+    }
+  </script>
+</body>
+</html>

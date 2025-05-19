@@ -1,0 +1,129 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tax Services - File & Check Refund</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url("images/crowd.jpg") no-repeat center center fixed;
+      background-size: cover;
+      padding: 20px;
+      margin: 0;
+      color: #006A71;
+    }
+
+    h2 {
+      text-align: center;
+      color:#FFFFFF;
+
+
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 6px 20px rgba(0, 106, 113, 0.2);
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #006A71;
+      border-radius: 6px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #006A71;
+    }
+
+    button {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #48A6A7, #006A71);
+      color: #F2EFE7;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      width: 100%;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #006A71, #48A6A7);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+
+<h2>Online Tax Services</h2>
+
+<form id="taxForm" enctype="multipart/form-data">
+  <label>Full Name:</label>
+  <input type="text" name="name" required placeholder="Enter your full name">
+
+  <label>Email:</label>
+  <input type="email" name="email" required placeholder="Enter your email">
+
+  <label>PAN Number:</label>
+  <input type="text" name="taxId" required placeholder="ABCDE1234F">
+
+  <label>Annual Income (INR):</label>
+  <input type="number" name="income" required placeholder="e.g. 850000">
+
+  <label>Tax Paid (INR):</label>
+  <input type="number" name="amount" required placeholder="e.g. 95000">
+
+  <label>Upload PAN Card:</label>
+  <input type="file" name="panCard" accept=".jpg, .jpeg, .png, .pdf" required>
+
+  <label>Upload Form 16:</label>
+  <input type="file" name="form16" accept=".pdf" required>
+
+  <label>Upload Salary Slip (Latest):</label>
+  <input type="file" name="salarySlip" accept=".pdf, .jpg, .png" required>
+
+  <button type="submit">Submit Tax Details</button>
+</form>
+
+<script>
+  document.getElementById("taxForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const name = form.querySelector('input[name="name"]').value;
+    localStorage.setItem("userName", name);
+
+    fetch("/submit-tax", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => {
+      if (res.ok) {
+        // Redirect to thankyou.html with name in URL
+        window.location.href = `/thankyou.html?name=${encodeURIComponent(name)}`;
+      } else {
+        alert("Failed to submit. Try again.");
+      }
+    })
+    .catch(err => {
+      console.error("Submission error:", err);
+      alert("Server error occurred.");
+    });
+  });
+</script>
+
+</body>
+</html>

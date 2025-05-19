@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thank You</title>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .thank-you-container {
+      background: white;
+      padding: 40px 50px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .thank-you-container h1 {
+      color: #4CAF50;
+      margin-bottom: 15px;
+    }
+
+    .thank-you-container p {
+      font-size: 18px;
+      color: #555;
+    }
+
+    .back-btn {
+      margin-top: 25px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .back-btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="thank-you-container">
+    <h1>Thank You!</h1>
+    <p id="message">Loading...</p>
+    <a class="back-btn" href="index.html">Back to Home</a>
+  </div>
+
+  <script>
+    // ✅ Use session-based API to get user name from backend
+    fetch('/api/thankyou-name')
+      .then(res => res.json())
+      .then(data => {
+        const name = data.name || localStorage.getItem("submittedName");
+        const msg = name
+          ? `Thank you, ${name}! Your form has been submitted.`
+          : "Thank you! Your form has been submitted.";
+        document.getElementById("message").innerText = msg;
+      })
+      .catch(() => {
+        document.getElementById("message").innerText =
+          "Thank you! Your form has been submitted.";
+      });
+  </script>
+</body>
+</html>

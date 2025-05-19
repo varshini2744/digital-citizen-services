@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Citizen Services</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="home-header">
+    <div class="header-container">
+      <h1>Digital Citizen Services</h1>
+
+      <!-- Hamburger Menu -->
+      <button class="menu-toggle" id="menuToggle">☰</button>
+
+      <nav id="navMenu">
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="admin.html">Admin</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section id="home" data-aos="fade-up">
+    <h2>Welcome to Digital Citizen Services</h2>
+    <p>Access government services online with ease.</p>
+  </section>
+
+  <section id="services" data-aos="fade-up">
+    <h2>Our Services</h2>
+    <div class="service-container">
+      <div class="service-box" data-aos="zoom-in">
+        <a href="apply-id.html">
+          <h3>Apply for ID</h3>
+          <p>Online application for national identification.</p>
+        </a>
+      </div>
+      <div class="service-box" data-aos="zoom-in">
+        <a href="tax-services.html">
+          <h3>Tax Services</h3>
+          <p>File your taxes and check refunds online.</p>
+        </a>
+      </div>
+      <div class="service-box" data-aos="zoom-in">
+        <a href="rto-registration.html">
+          <h3>RTO Registration</h3>
+          <p>Apply for vehicle registration digitally.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" data-aos="fade-up">
+    <h2>Contact Us</h2>
+    <form id="contactForm">
+      <label for="name">Name:</label>
+      <input type="text" id="name" required />
+      
+      <label for="email">Email:</label>
+      <input type="email" id="email" required />
+      
+      <label for="message">Message:</label>
+      <textarea id="message" required></textarea>
+      
+      <button type="submit">Send</button>
+    </form>
+    <p id="responseMessage"></p>
+  </section>
+
+  <script>
+    document.getElementById("contactForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      if (name) {
+        localStorage.setItem("submittedName", name);
+      }
+      window.location.href = "thankyou.html";
+    });
+
+    // Mobile menu toggle
+    document.getElementById("menuToggle").addEventListener("click", function () {
+      document.getElementById("navMenu").classList.toggle("active");
+    });
+
+    // AOS init
+    AOS.init({ duration: 800, once: true });
+  </script>
+</body>
+</html>

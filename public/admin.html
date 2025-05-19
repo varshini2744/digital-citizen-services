@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-box {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .loading {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <form id="adminLoginForm" novalidate>
+      <input type="email" name="email" id="email" placeholder="Email" required autocomplete="off"/>
+      <input type="password" name="password" id="password" placeholder="Password" required autocomplete="off"/>
+      <button type="submit">Login</button>
+    </form>
+    <div class="loading" id="loadingMsg" style="display:none;">Logging in...</div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    document.getElementById("adminLoginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const errorMsg = document.getElementById("errorMsg");
+      const loadingMsg = document.getElementById("loadingMsg");
+
+      errorMsg.textContent = "";
+      loadingMsg.style.display = "block";
+
+      try {
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+        loadingMsg.style.display = "none";
+
+        if (!response.ok) {
+          const msg = data?.message || "Invalid credentials";
+          throw new Error(msg);
+        }
+
+        if (!data.token || data.role !== "admin") {
+          throw new Error("Access denied. Admins only.");
+        }
+
+        // Store token (without 'Bearer' prefix)
+        localStorage.setItem("authToken", data.token);
+        window.location.href = "/admin-dashboard.html";
+
+      } catch (err) {
+        loadingMsg.style.display = "none";
+        errorMsg.textContent = err.message || "Login failed.";
+      }
+    });
+  </script>
+</body>
+</html>

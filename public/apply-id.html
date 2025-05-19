@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apply for ID</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url("images/crowd.jpg") no-repeat center center fixed;
+      background-size: cover;
+      padding: 20px;
+      margin: 0;
+      color: #006A71;
+    }
+
+    h2 {
+      text-align: center;
+      color:#FFFFFF
+;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 6px 20px rgba(0, 106, 113, 0.2);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #006A71;
+      border-radius: 6px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #006A71;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(0, 106, 113, 0.6);
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      background: linear-gradient(135deg, #48A6A7, #006A71);
+      color: #F2EFE7;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #006A71, #48A6A7);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+
+<h2>Apply for National ID</h2>
+
+<form id="applyForm" enctype="multipart/form-data">
+  <label for="fullName">Full Name:</label>
+  <input type="text" name="name" id="fullName" required placeholder="Enter your full name" />
+
+  <label for="dob">Date of Birth:</label>
+  <input type="date" name="dob" id="dob" required />
+
+  <label for="gender">Gender:</label>
+  <select name="gender" id="gender" required>
+    <option value="">Select</option>
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+    <option value="other">Other</option>
+  </select>
+
+  <label for="phone">Phone Number:</label>
+  <input type="tel" name="phone" id="phone" pattern="[0-9]{10}" required placeholder="10-digit number" />
+
+  <label for="email">Email:</label>
+  <input type="email" name="email" id="email" required placeholder="you@example.com" />
+
+  <label for="address">Address:</label>
+  <textarea name="address" id="address" rows="3" required placeholder="Enter your address"></textarea>
+
+  <label for="idType">ID Type:</label>
+  <select name="idType" id="idType" required>
+    <option value="">Select</option>
+    <option value="national">National ID</option>
+    <option value="voter">Voter ID</option>
+    <option value="other">Other</option>
+  </select>
+
+  <label for="photo">Upload Photo:</label>
+  <input type="file" name="photo" id="photo" accept="image/*" required />
+
+  <label for="idProof">Upload ID Proof (PDF/Image):</label>
+  <input type="file" name="idProof" id="idProof" accept=".pdf,image/*" required />
+
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  document.getElementById("applyForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const name = document.getElementById("fullName").value;
+    localStorage.setItem("userName", name);
+
+    fetch("http://localhost:3000/submit-id", {
+      method: "POST",
+      body: formData
+    })
+    .then(res => {
+      if (res.ok) {
+        window.location.href = "thankyou.html";
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
+    })
+    .catch(err => {
+      console.error("Form submit error:", err);
+      alert("Failed to submit form.");
+    });
+  });
+</script>
+
+</body>
+</html>

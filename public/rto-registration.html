@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RTO Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url("images/crowd.jpg") no-repeat center center fixed;
+      background-size: cover;
+      color: #006A71;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color:#FFFFFF
+;
+      margin-bottom: 30px;
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 6px 20px rgba(0, 106, 113, 0.2);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      border: 1px solid #006A71;
+      border-radius: 6px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #006A71;
+      box-sizing: border-box;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: rgba(0, 106, 113, 0.6);
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      background: linear-gradient(135deg, #48A6A7, #006A71);
+      color: #F2EFE7;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #006A71, #48A6A7);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>RTO Registration Form</h1>
+
+  <form id="rtoForm" action="/submit-rto-registration" method="POST">
+    <label for="fullName">Full Name:</label>
+    <input type="text" name="fullName" id="fullName" required placeholder="Enter your full name" />
+
+    <label for="vehicleType">Vehicle Type:</label>
+    <input type="text" name="vehicleType" id="vehicleType" required placeholder="e.g. Car, Bike, Truck" />
+
+    <label for="registrationNumber">Registration Number:</label>
+    <input type="text" name="registrationNumber" id="registrationNumber" required placeholder="e.g. MH12AB1234" />
+
+    <label for="address">Address:</label>
+    <textarea name="address" id="address" rows="3" required placeholder="Enter your residential address"></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.getElementById("rtoForm").addEventListener("submit", function (e) {
+      const name = document.getElementById("fullName").value;
+      localStorage.setItem("userName", name);
+    });
+  </script>
+
+</body>
+</html>
