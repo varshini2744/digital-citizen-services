@@ -1,5 +1,3 @@
-// server.js
-require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -10,9 +8,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET;
-const MONGODB_URI = process.env.MONGODB_URI;
+
+const MONGODB_URI = "mongodb+srv://varshinis2024mecse:6inP9nT02U9GZnlw@cluster0.nbqknbe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const PORT = 3000;
+const JWT_SECRET = "yourSuperSecretKey";
+const ADMIN_EMAIL = "admin@example.com";
+const ADMIN_PASSWORD = "admin123";
 
 // Middleware
 app.use(cors());
@@ -65,8 +66,10 @@ const RtoModel = mongoose.model("RTORegistration", RtoSchema);
 
 // Admin Seeder
 async function seedAdminUser() {
-  const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.warn("⚠️ Admin credentials are missing.");
+    return;
+  }
 
   const existing = await UserModel.findOne({ email: ADMIN_EMAIL });
   if (!existing) {
@@ -78,7 +81,7 @@ async function seedAdminUser() {
   }
 }
 
-// MongoDB connection
+// Connect to MongoDB
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -86,9 +89,7 @@ mongoose.connect(MONGODB_URI, {
   console.log("✅ Connected to MongoDB Atlas");
   await seedAdminUser();
   app.listen(PORT, () => {
-    const url = `http://localhost:${PORT}`;
-    console.log(`🚀 Server running at ${url}`);
-    import("open").then(open => open.default(url)).catch(err => console.error("Failed to open browser:", err));
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
 }).catch(err => {
   console.error("❌ MongoDB connection error:", err);
@@ -210,8 +211,8 @@ app.get("/view-rto", authMiddleware, adminOnly, async (req, res) => {
   const data = await RtoModel.find({});
   let html = generateAdminHeader("RTO Registrations") +
     `<h2>RTO Registrations</h2><table border="1"><tr><th>Full Name</th><th>Vehicle Type</th><th>Registration Number</th><th>Address</th><th>RC Document</th><th>Status</th></tr>`;
-  data.forEach(entry => {
-    html += `<tr><td>${entry.fullName}</td><td>${entry.vehicleType}</td><td>${entry.registrationNumber}</td><td>${entry.address}</td><td><a href="/${entry.rcPath}" target="_blank">View</a></td><td>${entry.status}</td></tr>`;
+  data.forEach(app => {
+    html += `<tr><td>${app.fullName}</td><td>${app.vehicleType}</td><td>${app.registrationNumber}</td><td>${app.address}</td><td><a href="/${app.rcPath}" target="_blank">View</a></td><td>${app.status}</td></tr>`;
   });
   html += `</table></body></html>`;
   res.send(html);
