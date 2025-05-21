@@ -1,6 +1,5 @@
-// Load environment variables
+// server.js
 require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -13,22 +12,19 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!JWT_SECRET) {
-  console.error("\u274C JWT_SECRET is not defined in .env file!");
-  process.exit(1);
-}
-
+// Middleware
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ------------------ SCHEMAS ------------------
+// MongoDB schemas
 const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  email: { type: String, unique: true },
+  password: String,
   role: { type: String, enum: ["user", "admin"], default: "user" },
 });
 
@@ -38,7 +34,7 @@ const IdSchema = new mongoose.Schema({
   documentType: String,
   photoPath: String,
   idProofPath: String,
-  status: { type: String, enum: ["pending", "approved", "rejected", "reupload"], default: "pending" }
+  status: { type: String, enum: ["pending", "approved", "rejected", "reupload"], default: "pending" },
 });
 
 const TaxSchema = new mongoose.Schema({
@@ -50,7 +46,7 @@ const TaxSchema = new mongoose.Schema({
   panCardPath: String,
   form16Path: String,
   salarySlipPath: String,
-  status: { type: String, enum: ["pending", "approved", "rejected", "reupload"], default: "pending" }
+  status: { type: String, enum: ["pending", "approved", "rejected", "reupload"], default: "pending" },
 });
 
 const RtoSchema = new mongoose.Schema({
@@ -59,7 +55,7 @@ const RtoSchema = new mongoose.Schema({
   registrationNumber: String,
   address: String,
   rcPath: String,
-  status: { type: String, enum: ["pending", "approved", "rejected", "reupload"], default: "pending" }
+  status: { type: String, enum: ["pending", "approved", "rejected", "reupload"], default: "pending" },
 });
 
 const UserModel = mongoose.model("User", UserSchema);
@@ -67,40 +63,38 @@ const IdModel = mongoose.model("IDApplication", IdSchema);
 const TaxModel = mongoose.model("TaxApplication", TaxSchema);
 const RtoModel = mongoose.model("RTORegistration", RtoSchema);
 
+// Admin Seeder
 async function seedAdminUser() {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminEmail || !adminPassword) {
-    console.warn("\u26A0\uFE0F Admin credentials not set in .env file. Skipping admin seeding.");
-    return;
-  }
-  const existing = await UserModel.findOne({ email: adminEmail });
+  const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return;
+
+  const existing = await UserModel.findOne({ email: ADMIN_EMAIL });
   if (!existing) {
-    const hashed = await bcrypt.hash(adminPassword, 10);
-    await UserModel.create({ email: adminEmail, password: hashed, role: "admin" });
-    console.log(`\u2705 Admin user created: ${adminEmail}`);
+    const hashed = await bcrypt.hash(ADMIN_PASSWORD, 10);
+    await UserModel.create({ email: ADMIN_EMAIL, password: hashed, role: "admin" });
+    console.log(`✅ Admin user created: ${ADMIN_EMAIL}`);
   } else {
-    console.log(`\u2139\uFE0F Admin user already exists: ${adminEmail}`);
+    console.log(`ℹ️ Admin user already exists: ${ADMIN_EMAIL}`);
   }
 }
 
-mongoose.connect("mongodb://127.0.0.1:27017/digital_services", {
+// MongoDB connection
+mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
-
-mongoose.connection.once("open", async () => {
-  console.log("\u2705 Connected to MongoDB");
+}).then(async () => {
+  console.log("✅ Connected to MongoDB Atlas");
   await seedAdminUser();
   app.listen(PORT, () => {
     const url = `http://localhost:${PORT}`;
-    console.log(`\uD83D\uDE80 Server running at ${url}`);
-    import("open")
-      .then((open) => open.default(url))
-      .catch((err) => console.error("Failed to open browser:", err));
+    console.log(`🚀 Server running at ${url}`);
+    import("open").then(open => open.default(url)).catch(err => console.error("Failed to open browser:", err));
   });
+}).catch(err => {
+  console.error("❌ MongoDB connection error:", err);
 });
 
+// Multer Storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "uploads/";
@@ -113,6 +107,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Auth APIs
 app.post("/register", async (req, res) => {
   const { email, password, role } = req.body;
   const existing = await UserModel.findOne({ email });
@@ -132,6 +127,7 @@ app.post("/login", async (req, res) => {
   res.json({ token, role: user.role });
 });
 
+// Middleware
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).send("Missing token");
@@ -148,10 +144,8 @@ function adminOnly(req, res, next) {
   next();
 }
 
-app.post("/submit-id", upload.fields([
-  { name: "photo", maxCount: 1 },
-  { name: "idProof", maxCount: 1 },
-]), async (req, res) => {
+// Form Routes
+app.post("/submit-id", upload.fields([{ name: "photo" }, { name: "idProof" }]), async (req, res) => {
   const { name, email, documentType } = req.body;
   const photoPath = req.files?.photo?.[0]?.path || "";
   const idProofPath = req.files?.idProof?.[0]?.path || "";
@@ -159,11 +153,7 @@ app.post("/submit-id", upload.fields([
   res.redirect(`/thankyou.html?name=${encodeURIComponent(name)}`);
 });
 
-app.post("/submit-tax", upload.fields([
-  { name: "panCard", maxCount: 1 },
-  { name: "form16", maxCount: 1 },
-  { name: "salarySlip", maxCount: 1 },
-]), async (req, res) => {
+app.post("/submit-tax", upload.fields([{ name: "panCard" }, { name: "form16" }, { name: "salarySlip" }]), async (req, res) => {
   const { name, email, taxId, income, amount } = req.body;
   const panCardPath = req.files?.panCard?.[0]?.path || "";
   const form16Path = req.files?.form16?.[0]?.path || "";
@@ -179,7 +169,7 @@ app.post("/submit-rto-registration", upload.single("rcDocument"), async (req, re
   res.redirect(`/thankyou.html?name=${encodeURIComponent(fullName)}`);
 });
 
-// STATUS UPDATE ENDPOINT
+// Admin Status Update
 app.patch("/update-status", authMiddleware, adminOnly, async (req, res) => {
   const { id, type, status } = req.body;
   const models = { id: IdModel, tax: TaxModel, rto: RtoModel };
@@ -189,6 +179,7 @@ app.patch("/update-status", authMiddleware, adminOnly, async (req, res) => {
   res.send("Status updated successfully");
 });
 
+// Admin Views
 function generateAdminHeader(title) {
   return `<!DOCTYPE html><html><head><title>${title}</title><meta charset="UTF-8"></head><body>`;
 }
