@@ -130,7 +130,7 @@
     const name = document.getElementById("fullName").value;
     localStorage.setItem("userName", name);
 
-    fetch("http://localhost:3000/submit-id", {
+    fetch("https://digital-citizen-services-e8g8b3cwenfna5gj.centralindia-01.azurewebsites.net/", {
       method: "POST",
       body: formData
     })
